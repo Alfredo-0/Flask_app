@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <link rel="stylesheet" href='/static/main.css'/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis semántico de EP</title>
+</head>
+
+<body>
+    <header>
+        <h1>Análisis Semántico de la literatura seleccionada de Economía Popular</h1>
+        <nav>
+            <ul id="menu">
+                <li><a href="/">Menú</a></li>
+                <li><a href="/wordClouds">Nube de Palabras</a></li>
+                <li><a href="/visualization">Visualización</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id ="introduction">
+            <h2>Análisis Semántico con Top2Vec</h1>
+            <p>El análisis semántico, parte fundamental del procesamiento de lenguaje natural (NLP), consiste en interpretar el significado de textos a través de técnicas computacionales. En nuestro caso, se analizaron 14 de 19 artículos, libros y revistas académicas relacionadas con la Economía popular. De estos, los textos en inglés fueron traducidos al español, preprocesados y separados por párrafos, resultando en aproximadamente 700 párrafos que permiten realizar un análisis semántico profundo.</p>
+            <h2>¿Qué es Top2Vec?</h1>
+            <p>Top2Vec es una innovadora librería de procesamiento de lenguaje natural que facilita la organización y el análisis de grandes cantidades de texto. Utiliza técnicas avanzadas de machine learning para descubrir los tópicos predominantes en un conjunto de documentos de forma automática y eficiente.</p>
+
+            <h2>Nube de Palabras</h2>
+            <p>Una <strong>nube de palabras</strong> es una representación visual donde las palabras más frecuentes aparecen con un tamaño mayor. Esta herramienta es útil para obtener rápidamente una idea de los temas principales en un texto.</p>
+            <img src="/static/img/output_24_0.png" alt="Ejemplo de Nube de Palabras" style="width:500px;height:auto;">
+
+            <h2>Vectorización de Documentos y Palabras</h2>
+            <p>La vectorización en Top2Vec se refiere al proceso de <em>incrustación conjunta de documentos y vectores de palabras</em> (jointly embedded document and word vectors). Esto significa que tanto documentos como palabras se transforman en vectores de números que representan su contenido y contexto. De esta manera, palabras y documentos similares estarán más cercanos entre sí en el espacio vectorial, facilitando la identificación de relaciones y patrones.</p>
+
+            <h2>Nubes de Palabras por Tópicos</h2>
+            <p>Top2Vec permite crear nubes de palabras que no solo destacan la frecuencia, sino que también muestran los tópicos más cercanos a una palabra específica. Esto es especialmente útil para explorar cómo un término particular se relaciona con diferentes tópicos dentro del conjunto de datos.</p>
+            <img src="/static/img/output_24_1.png" alt="Nube de Palabras relacionada a capitalismo" style="width:500px;height:auto;">
+
+    </main>
+
+
+</body>
+    <footer>
+        <p>&copy; 2024 Análisis Semántico de la EP</p>
+    </footer>
+
+</html>

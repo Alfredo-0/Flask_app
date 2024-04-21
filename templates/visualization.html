@@ -1,0 +1,40 @@
+<!-- templates/visualization.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="stylesheet" href='/static/main.css'/>
+    <meta charset="UTF-8">
+    <title>Visualizacion</title>
+</head>
+
+<body>
+    <header>
+        <h1>Vectorización de palabras del vocabulario de Economía Popular</h1>
+        <nav>
+            <ul id="menu">
+                <li><a href="/">Menú</a></li>
+                <li><a href="/wordClouds">Nube de Palabras</a></li>
+                <li><a href="/visualization">Visualización</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="content">
+        <h1>Visualización Avanzada de Tópicos y Palabras</h1>
+        <p>Para entender mejor la relación entre diferentes documentos y palabras, utilizamos técnicas avanzadas de reducción de dimensionalidad y clustering como UMAP y HDBSCAN. Estas herramientas nos ayudan a visualizar y organizar grandes conjuntos de datos de texto de una manera más comprensible y visualmente accesible.</p>
+        <h2>¿Qué es UMAP?</h2>
+        <p>UMAP (Uniform Manifold Approximation and Projection) es una técnica que reduce la complejidad de los datos, transformando los vectores de alta dimensión (documentos y palabras) en una representación de baja dimensión. Esto nos permite visualizar los datos en un plano bidimensional o tridimensional, donde puntos similares se agrupan juntos, facilitando la identificación de patrones y relaciones entre las palabras y documentos.</p>
+        <h2>¿Qué es HDBSCAN?</h2>
+        <p>HDBSCAN (Hierarchical Density-Based Spatial Clustering of Applications with Noise) es un método de clustering que identifica grupos o 'clusters' de puntos similares en nuestros datos. En el contexto de nuestro análisis, este método agrupa documentos y palabras en tópicos basados en su similitud, lo que permite una separación clara y definida de temas. Cada grupo es representado con un color diferente en la visualización, haciendo que sea fácil distinguir entre los distintos tópicos.</p>
+        <p>Al combinar UMAP y HDBSCAN, podemos visualizar de manera efectiva y entender cómo se relacionan entre sí los documentos y palabras dentro de un gran volumen de datos, facilitando la exploración y el análisis de tópicos específicos.</p>
+    </div>
+    
+    <h1>Top2Vec Document Clusters</h1>
+    <!-- Plotly graph will be inserted here -->
+    <div>{{ plot_html|safe }}</div>
+
+<footer>
+    <p>&copy; 2024 Análisis Semántico de la EP</p>
+</footer>
+
+</body>
+</html>

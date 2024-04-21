@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <link rel="stylesheet" href='/static/main.css'/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis semántico de EP</title>
+</head>
+
+<body>
+    <header>
+        <h1>Nube de palabras de terminos relacionados con Economía Popular</h1>
+        <nav>
+            <ul id="menu">
+                <li><a href="/">Menú</a></li>
+                <li><a href="/wordClouds">Nube de Palabras</a></li>
+                <li><a href="/visualization">Visualización</a></li>
+            </ul>
+        </nav>
+    </header>
+    <h1>¿Cómo Funciona la Visualización de Tópicos?</h1>
+    <p>En esta sección, exploramos cómo diferentes temas o 'tópicos' están relacionados con palabras específicas utilizando una herramienta avanzada de análisis de texto llamada Top2Vec. Esta herramienta utiliza técnicas de inteligencia artificial para entender y organizar grandes cantidades de texto de manera que podamos ver claramente cuáles son los temas más relevantes asociados a una palabra en particular.</p>
+    <p>El proceso comienza con algo llamado 'reducción jerárquica', donde Top2Vec simplifica y organiza los datos de texto agrupándolos en tópicos relacionados de manera que los temas más generales se desglosan en subtemas más específicos. Luego, utilizamos la función 'buscar tópicos' para identificar y seleccionar los tópicos que están más estrechamente vinculados a la palabra que nos interesa. Finalmente, con la función 'generar nube de palabras', creamos visualizaciones llamativas donde las palabras más importantes de cada tópico se muestran en diferentes tamaños; cuanto mayor es el tamaño de una palabra, más relevante es dentro de ese tópico. Estas nubes de palabras te ayudan a visualizar rápidamente cómo se relaciona la palabra seleccionada con otros conceptos y temas dentro del conjunto de datos.</p>
+
+    <main>
+
+        <section id ="choosing-word">
+
+            <h1>Seleccione una palabra para generar nube de palabras</h1>
+            <select id="wordSelect">
+                <option value="">Seleccione una palabra...</option>
+                {% for word in words %}
+                    <option value="{{ word }}">{{ word }}</option>
+            {% endfor %}
+            </select>
+    
+    <div id="wordCloudContainer">
+        <!-- Word clouds will be displayed here -->
+    </div>
+    
+    <script>
+        document.getElementById('wordSelect').addEventListener('change', function() {
+            var keyword = this.value;
+            if (!keyword) {
+                document.getElementById('wordCloudContainer').innerHTML = '';
+                return;  // Early return if no keyword is selected
+            }
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/generate_wordcloud', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() {
+                if (this.status === 200) {
+                    var resp = JSON.parse(this.response);
+                    var container = document.getElementById('wordCloudContainer');
+                    container.innerHTML = '';  // Clear existing word clouds
+                    
+                    // Iterate over the images and add each to the container
+                    resp.images.forEach(function(imageSrc) {
+                        var img = document.createElement('img');
+                        img.src = imageSrc;
+                        img.alt = "Word Cloud";
+                        img.className = "word-cloud-image"; // Use class for styling
+                        container.appendChild(img);
+                    });
+                }
+            };
+            xhr.send('keyword=' + encodeURIComponent(keyword));
+        });
+    </script>
+
+
+</main>
+
+<footer>
+    <p>&copy; 2024 Análisis Semántico de la EP</p>
+</footer>
+
+</body>
+</html>

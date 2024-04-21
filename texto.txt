@@ -1,0 +1,270 @@
+from flask import Flask, render_template
+import plotly.graph_objects as go
+from plotly.io import to_html
+from top2vec import Top2Vec
+import umap
+from umap import UMAP
+import hdbscan
+from hdbscan import HDBSCAN
+import pandas as pd
+import plotly.express as px
+from scipy.special import softmax
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    # Load your Top2Vec model
+    model = Top2Vec.load("model_EP")
+    
+    # Obtain document vectors and clusters (labels)
+    doc_vecs = model.document_vectors
+    cluster_labels = model.doc_top # Or any other method to obtain labels if this doesn't directly apply
+    
+    umap_args = {'n_neighbors': 15,
+                 'n_components': 6,
+                 'metric': 'cosine',
+                 "random_state": 42,
+            }
+
+    hdbscan_args = {'min_cluster_size': 9,
+                    'min_samples': 2,
+                    'metric': 'euclidean',
+                    'cluster_selection_method': 'eom'
+                }
+    # Use UMAP to reduce dimensionality for visualization (adjust parameters as necessary)
+
+
+    doc_vecs = model.document_vectors
+
+    umap_3d = umap.UMAP(**umap_args)
+    proj_3d = umap_3d.fit_transform(doc_vecs)
+
+    
+    cluster = hdbscan.HDBSCAN(**hdbscan_args).fit(proj_3d)
+    
+    topic_words = model.get_topics()[0] 
+
+    top_3_topic_words = [words[:3] for words in topic_words]
+    doc_top_3_words = [top_3_topic_words[label] for label in cluster.labels_]
+    
+    x, y, z = proj_3d[:,0], proj_3d[:,1], proj_3d[:,2]
+
+    # Generate a 3D scatter plot
+
+    # Prepare the DataFrame
+    df = pd.DataFrame({
+        'x': x,
+        'y': y,
+        'z': z,
+        'Top 3 Topic Words': ['; '.join(words) for words in doc_top_3_words],  # Joining the top 3 words for hover info
+        'Cluster': cluster.labels_
+    })
+
+    # Generate the 3D scatter plot
+    fig_3d = px.scatter_3d(
+        df, x='x', y='y', z='z',
+        color='Cluster',
+        hover_data=['Top 3 Topic Words']  # Include the top 3 topic words in the hover data
+    )
+
+    fig_3d.update_traces(marker_size=1.5)  # Adjust marker size for better visibility if needed
+    fig_3d.show()
+
+    
+    # Update plot aesthetics
+    #fig.update_layout(margin=dict(l=0, r=0, b=0, t=0))
+    
+    # Convert the figure to HTML
+    plot_html = to_html(fig_3d, full_html=False)
+
+    # Render it in the template
+    return render_template('index.html', plot_html=plot_html)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+@app.route('/wordclouds')
+def wordclouds():
+    model = Top2Vec.load("model_EP")
+    
+    topic_words, word_scores, topic_scores, topic_nums = model.search_topics(keywords=["unidades domesticas"], num_topics=1)
+    topic_num = topic_nums[1]
+    word_score_dict = dict(zip(model.topic_words[topic_num], softmax(model.topic_word_scores[topic_num])))
+
+    background_color = "black"
+
+    plt.figure(figsize=(16, 4), dpi=200)
+    plt.axis("off")
+    plt.imshow(
+            WordCloud(width=1600,
+            height=400,
+            background_color=background_color).generate_from_frequencies(word_score_dict))
+    plt.title("Topic " + str(topic_num), loc='left', fontsize=25, pad=20)
+    
+    plot_html = to_html(plt, full_html=False)
+    # Render template with images
+    return render_template('wordclouds.html', plot_html=plot_html)
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <a href="/visualization">View Topic Word Clouds</a>
+    <title>Select Word for Word Cloud</title>
+</head>
+<body>
+    <h1>Select a Word to Generate a Word Cloud</h1>
+    <select id="wordSelect">
+        {% for word in words %}
+            <option value="{{ word }}">{{ word }}</option>
+        {% endfor %}
+    </select>
+    
+    <div id="wordCloudContainer">
+        <!-- Display each image -->
+        {% for image in images %}
+            <img src="{{ image }}" style="width: 100%; max-width: 1600px; height: auto; margin-bottom: 20px;">
+        {% endfor %}
+    </div>
+
+    
+    <script>
+        document.getElementById('wordSelect').addEventListener('change', function() {
+            var keyword = this.value;
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', '/generate_wordcloud', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() {
+                if (this.status == 200) {
+                    var resp = JSON.parse(this.response);
+                    document.getElementById('wordCloudContainer').innerHTML = '<img src="' + resp.image + '" alt="Word Cloud">';
+                }
+            };
+            xhr.send('keyword=' + encodeURIComponent(keyword));
+        });
+    </script>
+</body>
+</html>
+
+
+
+# Load your Top2Vec model
+    #model = Top2Vec.load("model_EP")
+    
+    # Obtain document vectors and clusters (labels)
+    doc_vecs = model.document_vectors
+    cluster_labels = model.doc_top # Or any other method to obtain labels if this doesn't directly apply
+    
+    umap_args = {'n_neighbors': 21,
+                 'n_components': 15,
+                 'metric': 'cosine',
+                 "random_state": 42,
+            }
+
+    hdbscan_args = {'min_cluster_size': 5,
+                    'min_samples': 1,
+                    'metric': 'euclidean',
+                    'cluster_selection_method': 'eom'
+                }
+    # Use UMAP to reduce dimensionality for visualization (adjust parameters as necessary)
+
+    doc_vecs = model.document_vectors
+
+    umap_3d = umap.UMAP(**umap_args)
+    proj_3d = umap_3d.fit_transform(doc_vecs)
+
+    
+    cluster = hdbscan.HDBSCAN(**hdbscan_args).fit(proj_3d)
+    
+    topic_words = model.get_topics()[0] 
+
+    top_3_topic_words = [words[:3] for words in topic_words]
+    doc_top_3_words = [top_3_topic_words[label] for label in cluster.labels_]
+    
+    x, y, z = proj_3d[:,0], proj_3d[:,1], proj_3d[:,2]
+
+    # Generate a 3D scatter plot
+
+    # Prepare the DataFrame
+    df = pd.DataFrame({
+        'x': x,
+        'y': y,
+        'z': z,
+        'Top 3 Topic Words': ['; '.join(words) for words in doc_top_3_words],  # Joining the top 3 words for hover info
+        'Cluster': cluster.labels_
+    })
+
+    # Generate the 3D scatter plot
+    fig_3d = px.scatter_3d(
+        df, x='x', y='y', z='z',
+        color='Cluster',
+        hover_data=['Top 3 Topic Words']  # Include the top 3 topic words in the hover data
+    )
+
+    fig_3d.update_traces(marker_size=1.5)  # Adjust marker size for better visibility if needed
+    fig_3d.show()
+
+@app.route('/wordClouds')
+def wordClouds():
+    # List of words you want to display for selection
+    words = ["acumulacion capital","economia popular", "servicio domestico", "reproduccion vida", "hogar"]
+    return render_template('wordClouds.html', words=words)
+
+@app.route('/generate_wordcloud', methods=['POST'])
+def generate_wordcloud():
+    model = Top2Vec.load("model_EP2")
+    keyword = request.form['keyword']
+    # Assuming your model has a method to find related topics and generate word clouds
+    # For demonstration, let's generate a dummy word cloud based on the keyword
+    topic_words, word_scores, topic_scores, topic_nums = model.search_topics(keywords=[keyword], num_topics=40)
+    model.hierarchical_topic_reduction(num_topics=3)
+
+    images = []
+    for i in range(3):
+        word_score_dict = dict(zip(model.topic_words_reduced[i], softmax(model.topic_word_scores_reduced[i])))
+        wordcloud = WordCloud(width=1600, height=400,
+                              background_color="black").generate_from_frequencies(word_score_dict)
+        img = BytesIO()
+        wordcloud.to_image().save(img, format='PNG')
+        img.seek(0)
+        img_base64 = base64.b64encode(img.getvalue()).decode('utf8')
+        images.append(f"data:image/png;base64,{img_base64}")    
+ 
+    
+    return jsonify({'images': images})
+
+
+
+
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+nav ul li a {
+    color: rgb(255, 255, 255);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+nav a:hover {
+    background-color: #ddd; /* Fondo claro */
+    color: #333; /* Texto oscuro */
+    border: 2px solid #555; /* Borde visible */
+}
